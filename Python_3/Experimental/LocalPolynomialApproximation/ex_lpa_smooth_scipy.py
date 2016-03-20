@@ -7,12 +7,13 @@
 # the SciPy.ndimage convolve function. Checkout ex_lpa_smooth.py for the exact same 
 # algorithm accelerated by the Numba JIT compiler.
 #
-import sys
+import sys,os
 import numpy as np
 from scipy.ndimage import convolve
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
+sys.path.insert(0, os.path.join(sys.path[0], '..'))
 import extattrib as xa
 
 #

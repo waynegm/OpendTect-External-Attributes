@@ -1,24 +1,31 @@
 #!/usr/bin/python
 #
-# Local Polynomial Approximation Smoother using Numba JIT Acceleration
+# Local Polynomial Approximation using Numba JIT Acceleration
 #
-# Smooths the data by fitting a 2nd order polynomial to a small window around 
+# Calculates the coefficients of a 3D 2nd order polynomial approximation to a small window around 
 # each data sample using gaussian weighted least squares. This implementation uses the Numba JIT to
 # accelerate the convolution.
+# 
+# The approximation has the following form:
+# r0 + r1*x + r2*y + r3*z + r4*x^2 + r5*y^2 +r6*z^2 + r7*x*y + r8*xz + r9*yz
+# where x,y and z are relative to the analysis location, ie the analysis location has x=y=z=0.
 #
-import sys
+import sys,os
 import numpy as np
+from scipy.ndimage import convolve
 from numba import jit,double
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
+sys.path.insert(0, os.path.join(sys.path[0], '..'))
 import extattrib as xa
 
 #
 # These are the attribute parameters
 #
 xa.params = {
-	'Inputs': ['Input'],
+	'Input': 'Input',
+	'Output': ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9'],
 	'ZSampMargin' : {'Value':[-1,1], 'Symmetric': True},
 	'StepOut' : {'Value': [1,1]},
 	'Par_0': {'Name': 'Weight Factor', 'Value': 0.2},
@@ -28,19 +35,21 @@ xa.params = {
 # Define the compute function
 #
 def doCompute():
-	dz = xa.params['ZSampMargin']['Value'][1] - xa.params['ZSampMargin']['Value'][0] + 1
-	kernel = lpa3D_init(xa.SI['nrinl'], xa.SI['nrcrl'], dz, xa.params['Par_0']['Value'])[0]
+	zs = xa.params['ZSampMargin']['Value'][1] - xa.params['ZSampMargin']['Value'][0] + 1
+	kernel = lpa3D_init(xa.SI['nrinl'], xa.SI['nrcrl'], zs, xa.params['Par_0']['Value'])
 	while True:
 		xa.doInput()
-		xa.Output = sconvolve(xa.Input['Input'], kernel)
+		for i in range(0,10):
+			xa.Output['r'+str(i)] = sconvolve(xa.Input,kernel[i])
 		xa.doOutput()
 	
-
 #
 # Find the LPA solution for a 2nd order polynomial in 3D
 #
 def lpa3D_init( xs, ys, zs, sigma=0.2 ):
-	std = sigma * (min(xs,ys,zs)-1)
+	sx = sigma * (xs-1)
+	sy = sigma * (ys-1)
+	sz = sigma * (zs-1)
 	hxs = (xs-1)/2
 	hys = (ys-1)/2
 	hzs = (zs-1)/2
@@ -51,7 +60,7 @@ def lpa3D_init( xs, ys, zs, sigma=0.2 ):
 	x = xyz[0].flatten()
 	y = xyz[1].flatten()
 	z = xyz[2].flatten()
-	w = np.exp(-(x**2+y**2+z**2)/(2*std**2))
+	w = np.exp(-(x**2/(2*sx**2) + y**2/(2*sy**2) + z**2/(2*sz**2)))
 	W = np.diagflat(w)
 	A = np.dstack((np.ones(x.size), x, y, z, x*x, y*y, z*z, x*y, x*z, y*z)).reshape((x.size,10))
 	DB = np.linalg.inv(A.T.dot(W).dot(A)).dot(A.T).dot(W)

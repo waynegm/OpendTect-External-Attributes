@@ -1,19 +1,17 @@
 #!/usr/bin/python
 #
-# Orientation Tensor by Local Polynomial Approximation using Numba JIT Acceleration
+# Orientation from Orientation Tensor by Local Polynomial Approximation using Numba JIT Acceleration
 #
-# Uses the coefficients of a local polynomial approximation (3D 2nd order polynomial using 
-# gaussian weighted least squares) to calculate the orientation tensor proposed by Farneback.
-#
-# The numbering of the outputs refer to the corresponding eigenvalue.
-#
-import sys
+# Calculates the orientation using an orientation tensor derived from the coefficients of a local polynomial
+# approximation (3D 2nd order polynomial using gaussian weighted least squares) as proposed by Farneback.
+# 
+import sys,os
 import numpy as np
-from scipy.ndimage import convolve
 from numba import jit,double
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
+sys.path.insert(0, os.path.join(sys.path[0], '..'))
 import extattrib as xa
 
 #
@@ -21,11 +19,11 @@ import extattrib as xa
 #
 xa.params = {
 	'Input': 'Input',
-	'Output': ['t1x', 't1y', 't1z', 't2x', 't2y', 't2z', 't3x', 't3y', 't3z'],
+	'Output': ['Crl_dip', 'Inl_dip', 'True Dip', 'Dip Azimuth', 'Coherency'],
 	'ZSampMargin' : {'Value':[-1,1], 'Symmetric': True},
 	'StepOut' : {'Value': [1,1]},
 	'Par_0': {'Name': 'Weight Factor', 'Value': 0.2},
-	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/LPA_Attributes/'
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/DipAndAzimuth/'
 }
 #
 # Define the compute function
@@ -37,6 +35,8 @@ def doCompute():
 	wf = xa.params['Par_0']['Value']
 	kernel = lpa3D_init(xs, ys, zs, wf)
 	gam = 1/(8*((min(xs,ys,zs)-1)*wf)**2)
+	inlFactor = xa.SI['zstep']/xa.SI['inldist'] * xa.SI['dipFactor']
+	crlFactor = xa.SI['zstep']/xa.SI['crldist'] * xa.SI['dipFactor']
 	while True:
 		xa.doInput()
 		r = np.zeros((10,xa.TI['nrsamp']))
@@ -47,18 +47,20 @@ def doCompute():
 		B = np.rollaxis(np.array([[r[1]],[r[2]],[r[3]]]),2)
 		BBT = np.einsum('...ij,...jk->...ik', B, np.swapaxes(B,1,2))
 		T = AAT+gam*BBT
-		p = np.rollaxis(T,0,3)
-		xa.Output['t1x'] = p[0,0,:]*np.sign(p[0,2,:])
-		xa.Output['t1y'] = p[0,1,:]*np.sign(p[0,2,:])
-		xa.Output['t1z'] = p[0,2,:]*np.sign(p[0,2,:])
-		xa.Output['t2x'] = p[1,0,:]*np.sign(p[1,2,:])
-		xa.Output['t2y'] = p[1,1,:]*np.sign(p[1,2,:])
-		xa.Output['t2z'] = p[1,2,:]*np.sign(p[1,2,:])
-		xa.Output['t3x'] = p[2,0,:]*np.sign(p[2,2,:])
-		xa.Output['t3y'] = p[2,1,:]*np.sign(p[2,2,:])
-		xa.Output['t3z'] = p[2,2,:]*np.sign(p[2,2,:])
+		evals, evecs = np.linalg.eigh(T)
+		ndx = evals.argsort()
+		evecs = evecs[np.arange(0,T.shape[0],1),:,ndx[:,2]]
+		eval2 = evals[np.arange(0,T.shape[0],1),ndx[:,2]]
+		eval1 = evals[np.arange(0,T.shape[0],1),ndx[:,0]]
+
+		xa.Output['Crl_dip'] = -evecs[:,1]/evecs[:,2]*crlFactor
+		xa.Output['Inl_dip'] = -evecs[:,0]/evecs[:,2]*inlFactor
+		xa.Output['True Dip'] = np.sqrt(xa.Output['Crl_dip']*xa.Output['Crl_dip']+xa.Output['Inl_dip']*xa.Output['Inl_dip'])
+		xa.Output['Dip Azimuth'] = np.degrees(np.arctan2(xa.Output['Inl_dip'],xa.Output['Crl_dip']))
+		coh = (eval2-eval1)/(eval2+eval1) 
+		xa.Output['Coherency'] = coh * coh
+
 		xa.doOutput()
-	
 #
 # Find the LPA solution for a 2nd order polynomial in 3D
 #
@@ -103,7 +105,6 @@ def sconvolve(arr, filt):
 					num += (filt[Xf-1-ii, Yf-1-jj, Zf-1-kk] * arr[X2-Xf2+ii, Y2-Yf2+jj, i-Zf2+kk])
 		result[i] = num
 	return result
-
 #
 # Assign the compute function to the attribute
 #

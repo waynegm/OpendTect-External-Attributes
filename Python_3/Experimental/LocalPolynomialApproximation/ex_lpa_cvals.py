@@ -1,21 +1,28 @@
 #!/usr/bin/python
 #
-# Orientation from Orientation Tensor by Local Polynomial Approximation using Numba JIT Acceleration
+# Some Attributes derived from the Eigenvalues of Orientation Tensor
 #
-# Calculates the orientation using an orientation tensor derived from the coefficients of a local polynomial
+# Calculates a series os attributes based on the eigenvalues of an orientation tensor
+#
+# Cline = (e2-e3)/(e2+e3) (Bakker, 2001)
+# Cplane = (e1-e2)/(e1+e2) (Bakker, 2001)
+# Cfault = Cline * (1 - Cplane) (Bakker, 2001)
+# Cchaos = 4*e1*e3*(e1+e2+e3)/(e1+e3)^2 (Wang etal, 2009)
+# Ctype = ((e1-e2)^2 + (e1-e3)^2 + (e2-e3)^2) / (e1^2 + e2^2 + e3^2) (Haubecker and Jahne, 1996)
+#
+# The orientation tensor is derived from the coefficients of a local polynomial
 # approximation (3D 2nd order polynomial using gaussian weighted least squares) as proposed by Farneback.
 # 
-# The orientation, based on the the dominant eigenvector, is returned as inline and crossline dip in ms/m or mm/m 
-# depending on the if the Z axis is time or depth. This version includes filtering to remove dips outside a user
-# specified range and smoothing by a Z axis lowpass filter.
+# The eigenvalues are numbered in decreasing order of their magnitude.
 #
-import sys
+import sys,os
 import numpy as np
-from scipy.signal import butter, filtfilt
+from scipy.ndimage import convolve
 from numba import jit,double
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
+sys.path.insert(0, os.path.join(sys.path[0], '..'))
 import extattrib as xa
 
 #
@@ -23,11 +30,10 @@ import extattrib as xa
 #
 xa.params = {
 	'Input': 'Input',
-	'Output': ['Crl_dip', 'Inl_dip'],
+	'Output': ['Cline', 'Cplane', 'Cfault', 'Cchaos', 'Ctype'],
 	'ZSampMargin' : {'Value':[-1,1], 'Symmetric': True},
 	'StepOut' : {'Value': [1,1]},
 	'Par_0': {'Name': 'Weight Factor', 'Value': 0.2},
-	'Par_1': {'Name': '+/- Dip Clip(ms/m,mm/m)', 'Value': 300},
 	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/LPA_Attributes/'
 }
 #
@@ -38,12 +44,8 @@ def doCompute():
 	ys = xa.SI['nrcrl']
 	zs = xa.params['ZSampMargin']['Value'][1] - xa.params['ZSampMargin']['Value'][0] + 1
 	wf = xa.params['Par_0']['Value']
-	maxDip = xa.params['Par_1']['Value']
 	kernel = lpa3D_init(xs, ys, zs, wf)
 	gam = 1/(8*((min(xs,ys,zs)-1)*wf)**2)
-	inlFactor = xa.SI['zstep']/xa.SI['inldist'] * xa.SI['dipFactor']
-	crlFactor = xa.SI['zstep']/xa.SI['crldist'] * xa.SI['dipFactor']
-	smb,sma = butter(4, 0.3, btype='lowpass', analog=False)
 	while True:
 		xa.doInput()
 		r = np.zeros((10,xa.TI['nrsamp']))
@@ -54,18 +56,22 @@ def doCompute():
 		B = np.rollaxis(np.array([[r[1]],[r[2]],[r[3]]]),2)
 		BBT = np.einsum('...ij,...jk->...ik', B, np.swapaxes(B,1,2))
 		T = AAT+gam*BBT
-		evals, evecs = np.linalg.eigh(T)
-		ndx = evals.argsort()[:,-1]
-		evecs = evecs[np.arange(0,T.shape[0],1),:,ndx]
-		dip = -evecs[:,1]/evecs[:,2]*crlFactor
-		dip[dip>maxDip] = 0.0
-		dip[dip<-maxDip] = 0.0
-		xa.Output['Crl_dip'] = filtfilt(smb, sma, dip)
-		dip = -evecs[:,0]/evecs[:,2]*inlFactor
-		dip[dip>maxDip] = 0.0
-		dip[dip<-maxDip] = 0.0
-		xa.Output['Inl_dip'] = filtfilt(smb, sma, dip)
+		w = np.linalg.eigvalsh(T)
+		v=np.rollaxis(np.sort(w),1)
+		e1 = v[2,:]
+		e2 = v[1,:]
+		e3 = v[0,:]
+		e1me2 = e1-e2
+		e1me3 = e1-e3
+		e2me3 = e2-e3
+		e1pe3 = e1+e3
+		xa.Output['Cline'] = e2me3/(e2+e3)
+		xa.Output['Cplane'] = e1me2/(e1+e2)
+		xa.Output['Cfault'] = xa.Output['Cline']*(1.0 - xa.Output['Cplane'])
+		xa.Output['Cchaos'] = 4.0 * e1 * e3 * (e1 + e2 + e3)/(e1pe3*e1pe3)
+		xa.Output['Ctype'] = (e1me2*e1me2 + e1me3*e1me3 + e2me3*e2me3)/(e1*e1 + e2*e2 + e3*e3)
 		xa.doOutput()
+	
 #
 # Find the LPA solution for a 2nd order polynomial in 3D
 #
@@ -110,6 +116,7 @@ def sconvolve(arr, filt):
 					num += (filt[Xf-1-ii, Yf-1-jj, Zf-1-kk] * arr[X2-Xf2+ii, Y2-Yf2+jj, i-Zf2+kk])
 		result[i] = num
 	return result
+
 #
 # Assign the compute function to the attribute
 #

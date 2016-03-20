@@ -6,14 +6,17 @@
 # approximation (3D 2nd order polynomial using gaussian weighted least squares) as proposed by Farneback.
 # 
 # The orientation, based on the the dominant eigenvector, is returned as inline and crossline dip in ms/m or mm/m 
-# depending on the if the Z axis is time or depth. This version is the raw operator output without any filtering.
+# depending on the if the Z axis is time or depth. This version includes filtering to remove dips outside a user
+# specified range and smoothing by a Z axis lowpass filter.
 #
-import sys
+import sys,os
 import numpy as np
+from scipy.signal import butter, filtfilt
 from numba import jit,double
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
+sys.path.insert(0, os.path.join(sys.path[0], '..'))
 import extattrib as xa
 
 #
@@ -25,6 +28,7 @@ xa.params = {
 	'ZSampMargin' : {'Value':[-1,1], 'Symmetric': True},
 	'StepOut' : {'Value': [1,1]},
 	'Par_0': {'Name': 'Weight Factor', 'Value': 0.2},
+	'Par_1': {'Name': '+/- Dip Clip(ms/m,mm/m)', 'Value': 300},
 	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/LPA_Attributes/'
 }
 #
@@ -35,10 +39,12 @@ def doCompute():
 	ys = xa.SI['nrcrl']
 	zs = xa.params['ZSampMargin']['Value'][1] - xa.params['ZSampMargin']['Value'][0] + 1
 	wf = xa.params['Par_0']['Value']
+	maxDip = xa.params['Par_1']['Value']
 	kernel = lpa3D_init(xs, ys, zs, wf)
 	gam = 1/(8*((min(xs,ys,zs)-1)*wf)**2)
 	inlFactor = xa.SI['zstep']/xa.SI['inldist'] * xa.SI['dipFactor']
 	crlFactor = xa.SI['zstep']/xa.SI['crldist'] * xa.SI['dipFactor']
+	smb,sma = butter(4, 0.3, btype='lowpass', analog=False)
 	while True:
 		xa.doInput()
 		r = np.zeros((10,xa.TI['nrsamp']))
@@ -52,8 +58,14 @@ def doCompute():
 		evals, evecs = np.linalg.eigh(T)
 		ndx = evals.argsort()[:,-1]
 		evecs = evecs[np.arange(0,T.shape[0],1),:,ndx]
-		xa.Output['Crl_dip'] = -evecs[:,1]/evecs[:,2]*crlFactor
-		xa.Output['Inl_dip'] = -evecs[:,0]/evecs[:,2]*inlFactor
+		dip = -evecs[:,1]/evecs[:,2]*crlFactor
+		dip[dip>maxDip] = 0.0
+		dip[dip<-maxDip] = 0.0
+		xa.Output['Crl_dip'] = filtfilt(smb, sma, dip)
+		dip = -evecs[:,0]/evecs[:,2]*inlFactor
+		dip[dip>maxDip] = 0.0
+		dip[dip<-maxDip] = 0.0
+		xa.Output['Inl_dip'] = filtfilt(smb, sma, dip)
 		xa.doOutput()
 #
 # Find the LPA solution for a 2nd order polynomial in 3D
