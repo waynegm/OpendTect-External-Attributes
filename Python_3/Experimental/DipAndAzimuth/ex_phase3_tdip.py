@@ -45,9 +45,9 @@ def doCompute():
 		shz = xl.kroon3( sh, axis=2 )[hxs,hys,:]
 		a = s[hxs,hys,:]*s[hxs,hys,:] + sh[hxs,hys,:]*sh[hxs,hys,:]
 		
-		px = s[hxs,hys,:] * shx - sh[hxs,hys,:] * sx /a
-		py = s[hxs,hys,:] * shy - sh[hxs,hys,:] * sy /a
-		pz = s[hxs,hys,:] * shz - sh[hxs,hys,:] * sz /a
+		px = (s[hxs,hys,:] * shx - sh[hxs,hys,:] * sx) /a
+		py = (s[hxs,hys,:] * shy - sh[hxs,hys,:] * sy) /a
+		pz = (s[hxs,hys,:] * shz - sh[hxs,hys,:] * sz) /a
 #
 #	Form the structure tensor
 		px2 = px * px

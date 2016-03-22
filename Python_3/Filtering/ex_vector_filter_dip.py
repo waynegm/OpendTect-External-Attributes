@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
-# Inline, Crossline, True dip or Dip Azimuth using the vector filtered gradient
-# Derivatives calulated using Kroon's 3 point filter
+# Vector Filter given Inline and Crossline dip
+#
 #
 import sys,os
 import numpy as np
@@ -16,54 +16,40 @@ import extlib as xl
 # These are the attribute parameters
 #
 xa.params = {
-	'Inputs': ['Input'],
+	'Inputs': ['Crl_dip', 'Inl_dip'],
 	'Output': ['Crl_dip', 'Inl_dip', 'True Dip', 'Dip Azimuth'],
-	'ZSampMargin' : {'Value':[-2,2], 'Minimum':[-2,2], 'Symmetric': True},
-	'StepOut' : {'Value': [2,2], 'Minimum': [2,2], 'Symmetric': True},
+	'ZSampMargin' : {'Value':[-3,3], 'Symmetric': True},
+	'StepOut' : {'Value': [3,3], 'Symmetric': True},
 	'Select': {'Name': 'Filter', 'Values': ['Mean Dip', 'Vector L1 Median Dip', 'Vector L2 Median Dip'], 'Selection': 0},
-	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/DipAndAzimuth/'
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/Vector_Filters/'
 }
 #
 # Define the compute function
 #
 def doCompute():
-	xs = xa.SI['nrinl']
-	ys = xa.SI['nrcrl']
-	zs = xa.params['ZSampMargin']['Value'][1] - xa.params['ZSampMargin']['Value'][0] + 1
-	zw = zs-2
-	filt = xa.params['Select']['Selection']
-	filtFunc = autojit(xl.vecmean) if filt==0 else  autojit(xl.vmf_l1) if filt==1 else autojit(xl.vmf_l2)
 	inlFactor = xa.SI['zstep']/xa.SI['inldist'] * xa.SI['dipFactor']
 	crlFactor = xa.SI['zstep']/xa.SI['crldist'] * xa.SI['dipFactor']
+	zw = xa.params['ZSampMargin']['Value'][1] - xa.params['ZSampMargin']['Value'][0] + 1
+	filt = xa.params['Select']['Selection']
+	filtFunc = autojit(xl.vecmean) if filt==0 else  autojit(xl.vmf_l1) if filt==1 else autojit(xl.vmf_l2)
 	while True:
 		xa.doInput()
 
-		p = xa.Input['Input']
+		dx = -xa.Input['Inl_dip']/inlFactor
+		dy = -xa.Input['Crl_dip']/crlFactor
+		dz = np.ones(dx.shape)
+		s = np.sqrt(dx*dx+dy*dy+dz*dz)
 #
-#	Compute partial derivatives
-		px = xl.kroon3( p, axis=0 )[1:xs-1,1:ys-1,:]
-		py = xl.kroon3( p, axis=1 )[1:xs-1,1:ys-1,:]
-		pz = xl.kroon3( p, axis=2 )[1:xs-1,1:ys-1,:]
-#
-#	Normalise the gradients so Z component is positive
-		p = np.sign(pz)/np.sqrt(px*px+py*py+pz*pz)
-		px *= p
-		py *= p
-		pz *= p
-#
-#	Filter
+#	Apply the Vector Filter
 		out = np.empty((3,xa.TI['nrsamp']))
-		xl.vecFilter(np.array([px,py,pz]), zw, filtFunc, out)
+		xl.vecFilter(np.array([dx/s,dy/s,dz/s]), zw, filtFunc, out)
 #
 #	Get the output
 		xa.Output['Crl_dip'] = -out[1,:]/out[2,:]*crlFactor
 		xa.Output['Inl_dip'] = -out[0,:]/out[2,:]*inlFactor
 		xa.Output['True Dip'] = np.sqrt(xa.Output['Crl_dip']*xa.Output['Crl_dip']+xa.Output['Inl_dip']*xa.Output['Inl_dip'])
 		xa.Output['Dip Azimuth'] = np.degrees(np.arctan2(xa.Output['Inl_dip'],xa.Output['Crl_dip']))
-
 		xa.doOutput()
-	
-
 #
 # Assign the compute function to the attribute
 #

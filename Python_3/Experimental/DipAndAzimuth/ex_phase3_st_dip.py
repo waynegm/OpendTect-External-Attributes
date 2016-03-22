@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Inline, Crossline, True dip, Dip Azimuth or Coherency using the envelope weighted phase structure tensor
+# Inline, Crossline, True dip, Dip Azimuth or Coherency using the 3D complex trace phase structure tensor
 # Derivatives calulated using Kroon's 3 point filter
 #
 import sys,os
@@ -10,7 +10,7 @@ from scipy.signal import hilbert
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
-sys.path.insert(0, os.path.join(sys.path[0], '..'))
+sys.path.insert(0, os.path.join(sys.path[0], '..','..'))
 import extattrib as xa
 import extlib as xl
 
@@ -50,9 +50,10 @@ def doCompute():
 		shy = xl.kroon3( sh, axis=1 )
 		shz = xl.kroon3( sh, axis=2 )
 		
-		px = s[1:xs-1,1:ys-1,:] * shx[1:xs-1,1:ys-1,:] - sh[1:xs-1,1:ys-1,:] * sx[1:xs-1,1:ys-1,:]
-		py = s[1:xs-1,1:ys-1,:] * shy[1:xs-1,1:ys-1,:] - sh[1:xs-1,1:ys-1,:] * sy[1:xs-1,1:ys-1,:]
-		pz = s[1:xs-1,1:ys-1,:] * shz[1:xs-1,1:ys-1,:] - sh[1:xs-1,1:ys-1,:] * sz[1:xs-1,1:ys-1,:]
+		a = s[1:xs-1,1:ys-1,:]*s[1:xs-1,1:ys-1,:] + sh[1:xs-1,1:ys-1,:]*sh[1:xs-1,1:ys-1,:]
+		px = (s[1:xs-1,1:ys-1,:] * shx[1:xs-1,1:ys-1,:] - sh[1:xs-1,1:ys-1,:] * sx[1:xs-1,1:ys-1,:])/a
+		py = (s[1:xs-1,1:ys-1,:] * shy[1:xs-1,1:ys-1,:] - sh[1:xs-1,1:ys-1,:] * sy[1:xs-1,1:ys-1,:])/a
+		pz = (s[1:xs-1,1:ys-1,:] * shz[1:xs-1,1:ys-1,:] - sh[1:xs-1,1:ys-1,:] * sz[1:xs-1,1:ys-1,:])/a
 #
 #	Inner product of gradients
 		px2 = px * px

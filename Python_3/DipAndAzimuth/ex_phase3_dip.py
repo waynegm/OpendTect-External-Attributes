@@ -1,5 +1,5 @@
 #
-# Inline, Crossline, True dip or Dip Azimuth using the phase of the complex trace
+# Inline, Crossline, True dip or Dip Azimuth using the 3D complex trace phase
 # using derivatives calculated with Kroon's 3 point filter
 #
 import sys,os
@@ -9,7 +9,7 @@ import scipy.ndimage as ndi
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
-sys.path.insert(0, os.path.join(sys.path[0], '..','..'))
+sys.path.insert(0, os.path.join(sys.path[0], '..'))
 import extattrib as xa
 import extlib as xl
 
@@ -43,11 +43,10 @@ def doCompute():
 		shx = xl.kroon3( sh, axis=0 )[hxs,hys,:]
 		shy = xl.kroon3( sh, axis=1 )[hxs,hys,:]
 		shz = xl.kroon3( sh, axis=2 )[hxs,hys,:]
-		a = s[hxs,hys,:]*s[hxs,hys,:] + sh[hxs,hys,:]*sh[hxs,hys,:]
 		
-		px = s[hxs,hys,:] * shx - sh[hxs,hys,:] * sx /a
-		py = s[hxs,hys,:] * shy - sh[hxs,hys,:] * sy /a
-		pz = s[hxs,hys,:] * shz - sh[hxs,hys,:] * sz /a
+		px = s[hxs,hys,:] * shx - sh[hxs,hys,:] * sx 
+		py = s[hxs,hys,:] * shy - sh[hxs,hys,:] * sy 
+		pz = s[hxs,hys,:] * shz - sh[hxs,hys,:] * sz 
 #
 #	Calculate dips and output
 		xa.Output['Crl_dip'] = -py/pz*crlFactor

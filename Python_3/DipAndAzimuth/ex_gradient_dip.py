@@ -9,7 +9,7 @@ import numpy as np
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
-sys.path.insert(0, os.path.join(sys.path[0], '..','..'))
+sys.path.insert(0, os.path.join(sys.path[0], '..'))
 import extattrib as xa
 
 #
