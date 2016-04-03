@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Some Attributes derived from the Eigenvalues of the Gradient Structure Tensor
 #
 # Cline = (e2-e3)/(e2+e3) (Bakker, 2001)
@@ -12,15 +10,12 @@
 #
 import sys,os
 import numpy as np
-from scipy.ndimage import gaussian_filter
-from numba import jit,double
-
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
-sys.path.insert(0, os.path.join(sys.path[0], '..'))
+sys.path.insert(0, os.path.join(sys.path[0], '..', '..'))
 import extattrib as xa
-
+import extlib as xl
 #
 # These are the attribute parameters
 #
@@ -38,7 +33,7 @@ def doCompute():
 	xs = xa.SI['nrinl']
 	ys = xa.SI['nrcrl']
 	zs = xa.params['ZSampMargin']['Value'][1] - xa.params['ZSampMargin']['Value'][0] + 1
-	kernel = getGaussian(xs, ys, zs)
+	kernel = xl.getGaussian(xs, ys, zs)
 	while True:
 		xa.doInput()
 
@@ -55,12 +50,12 @@ def doCompute():
 		gygz = gy * gz
 #
 #	Outer gaussian smoothing
-		rgx2 = sconvolve(gx2, kernel)
-		rgy2 = sconvolve(gy2, kernel)
-		rgz2 = sconvolve(gz2, kernel)
-		rgxgy = sconvolve(gxgy, kernel)
-		rgxgz = sconvolve(gxgz, kernel)
-		rgygz = sconvolve(gygz, kernel)
+		rgx2 = xl.sconvolve(gx2, kernel)
+		rgy2 = xl.sconvolve(gy2, kernel)
+		rgz2 = xl.sconvolve(gz2, kernel)
+		rgxgy = xl.sconvolve(gxgy, kernel)
+		rgxgz = xl.sconvolve(gxgz, kernel)
+		rgygz = xl.sconvolve(gygz, kernel)
 #
 #	Form the structure tensor
 		T = np.rollaxis(np.array([	[rgx2,  rgxgy, rgxgz],
@@ -87,36 +82,6 @@ def doCompute():
 
 		xa.doOutput()
 	
-#
-# Gaussian filter kernel
-#
-def getGaussian( xs, ys, zs ):
-	tmp = np.zeros((xs,ys,zs))
-	tmp[xs//2, ys//2, zs//2] = 1.0
-	return gaussian_filter(tmp, (xs/6,ys/6,zs/6), mode='constant')
-#
-# Convolution of 3D filter with 3D data - only calulates the output for the centre trace
-# Numba JIT used to accelerate the calculations
-
-@jit(double(double[:,:,:], double[:,:,:]))
-def sconvolve(arr, filt):
-	X,Y,Z = arr.shape
-	Xf,Yf,Zf = filt.shape
-	X2 = X//2
-	Y2 = Y//2
-	Xf2 = Xf//2
-	Yf2 = Yf//2
-	Zf2 = Zf//2
-	result = np.zeros(Z)
-	for i in range(Zf2, Z-Zf2):
-		num = 0.0
-		for ii in range(Xf):
-			for jj in range(Yf):
-				for kk in range(Zf):
-					num += (filt[Xf-1-ii, Yf-1-jj, Zf-1-kk] * arr[X2-Xf2+ii, Y2-Yf2+jj, i-Zf2+kk])
-		result[i] = num
-	return result
-
 #
 # Assign the compute function to the attribute
 #

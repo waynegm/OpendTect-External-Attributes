@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Test availability of all UI Elements
 #
 import sys,os

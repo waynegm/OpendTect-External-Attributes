@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Simple test of single trace multi-attribute input
 #
 #

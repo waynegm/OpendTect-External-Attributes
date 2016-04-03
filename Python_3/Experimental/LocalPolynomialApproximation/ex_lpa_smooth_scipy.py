@@ -1,11 +1,8 @@
-#!/usr/bin/python
-#
 # Local Polynomial Approximation Smoother
 #
 # Smooths the data by fitting a 2nd order polynomial to a small window around 
 # each data sample using gaussian weighted least squares. This implementation uses
-# the SciPy.ndimage convolve function. Checkout ex_lpa_smooth.py for the exact same 
-# algorithm accelerated by the Numba JIT compiler.
+# the SciPy.ndimage convolve function. 
 #
 import sys,os
 import numpy as np
@@ -13,7 +10,7 @@ from scipy.ndimage import convolve
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
-sys.path.insert(0, os.path.join(sys.path[0], '..'))
+sys.path.insert(0, os.path.join(sys.path[0], '..', '..'))
 import extattrib as xa
 
 #

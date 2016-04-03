@@ -1,4 +1,4 @@
-# Test availability of all UI Elements with fewer inputs
+# Test availability of ZSampMargin Minimum option with Symmetric option
 #
 import sys,os
 import numpy as np
@@ -11,10 +11,9 @@ import extattrib as xa
 # These are the attribute parameters
 #
 xa.params = {
-	'Inputs': ['Input_1','Input_2'],
+	'Inputs': ['Input_1','Input_2','Input_3','Input_4','Input_5','Input_6'],
 	'Output': ['Output_1', 'Output_2', 'Output_3'],
-	'ZSampMargin' : {'Value':[-1,1]},
-	'StepOut' : {'Value': [1,1]},
+	'ZSampMargin' : {'Value':[-3,3], 'Minimum':[-2,2], 'Symmetric': True},
 	'Select' : {'Name': 'Selection', 'Values': ['Item 0', 'Item 1', 'Item 2', 'Item 3'], 'Selection': 2},
 	'Par_0': {'Name': 'Parameter 0', 'Value': 0},
 	'Par_1': {'Name': 'Parameter 1', 'Value': 1},
@@ -29,8 +28,6 @@ xa.params = {
 # Define the compute function
 #
 def doCompute():
-	json.dump(xa.params, sys.stderr)
-	sys.stderr.flush()
 	while True:
 		xa.doInput()
 		xa.doOutput()

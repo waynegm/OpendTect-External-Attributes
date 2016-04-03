@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Do nothing - multi-trace
 #
 import sys, os

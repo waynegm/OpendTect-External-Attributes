@@ -11,5 +11,17 @@ This a collection of [External Attribute](http://waynegm.github.io/OpendTect-Plu
 | ex_vf_phase3_dip.py | Orientation using the vector filtered 3D complex trace phase with gradients by Kroon's 3 point operator |
 | ex_weighted_phase3_st_dip.py | Orientation using the 3D complex trace envelope weighted phase structure tensor with gradients by Kroon's 3 point operator |
 
+All scripts will estimate at least the following attributes:
+
+| OUTPUT     | DESCRIPTION
+|------------|----------------|
+| Inline Dip | Event dip observed on a crossline in microseconds per metre for time surveys and millimetres per metre for depth surveys. Output can be positive or negative with the convention that events dipping towards larger inline numbers producing positive dips. |
+| Crossline Dip | Event dip observed on an inline in microseconds per metre for time surveys and millimetres per metre for depth surveys. Output can be positive or negative with the convention that events dipping towards larger crossline numbers producing positive dips. |
+| True Dip | Event dip in microseconds per metre for time surveys and millimetres per metre for depth surveys. Output is always positive. |
+| Dip Azimuth | Azimuth of the True Dip direction relative to the survey orientation. Output ranges from -180 to 180 degrees. Positive azimuth is defined from the inline in the direction of increasing crossline numbers. Azimuth = 0 indicates that the dip is dipping in the direction of increasing crossline numbers. Azimuth = 90 indicates that the dip is dipping in the direction of increasing inline numbers. |
+
+Some scripts may offer additional outputs such as a measure of event coherency or planarity.
+
+All of the scripts require the numba Python package.
 
 For further details please see the [documentation](http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/DipAndAzimuth).

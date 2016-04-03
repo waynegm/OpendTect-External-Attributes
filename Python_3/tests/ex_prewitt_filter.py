@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Apply Prewitt filter
 #
 import sys, os

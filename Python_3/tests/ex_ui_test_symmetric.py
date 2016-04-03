@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Test availability of ZSampMargin Symmetric option
 #
 import sys,os

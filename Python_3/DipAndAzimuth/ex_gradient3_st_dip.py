@@ -71,7 +71,7 @@ def doCompute():
 		xa.Output['Inl_dip'] = -evecs[:,0]/evecs[:,2]*inlFactor
 		xa.Output['True Dip'] = np.sqrt(xa.Output['Crl_dip']*xa.Output['Crl_dip']+xa.Output['Inl_dip']*xa.Output['Inl_dip'])
 		xa.Output['Dip Azimuth'] = np.degrees(np.arctan2(xa.Output['Inl_dip'],xa.Output['Crl_dip']))
-		xa.Output['Cplane'] = (e1-e2)/(e1+e2)
+		xa.Output['Cplane'] = (e1-e2)/e1
 		xa.doOutput()
 	
 #

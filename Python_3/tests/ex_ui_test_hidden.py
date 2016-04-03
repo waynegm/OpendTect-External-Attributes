@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Test availability of ZSampMargin and StepOut Hidden option
 #
 import sys,os

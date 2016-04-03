@@ -1,6 +1,3 @@
-#!/usr/bin/python
-
-#
 # Simple Butterworth LowPass Filter using Numpy/Scipy
 # for the OpendTect ExternalAttrib plugin
 #
