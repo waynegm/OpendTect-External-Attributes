@@ -20,7 +20,8 @@ xa.params = {
 	'Inputs': ['Input'],
 	'Output': ['Crl_dip', 'Inl_dip', 'True Dip', 'Dip Azimuth'],
 	'ZSampMargin' : {'Value':[-1,1], 'Hidden': True},
-	'StepOut' : {'Value': [1,1], 'Hidden': True}
+	'StepOut' : {'Value': [1,1], 'Hidden': True},
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/DipandAzimuth/'
 }
 #
 # Define the compute function

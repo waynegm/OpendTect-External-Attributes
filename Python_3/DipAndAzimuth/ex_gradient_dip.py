@@ -17,7 +17,8 @@ import extattrib as xa
 #
 xa.params = {
 	'Inputs': ['In-line gradient', 'Cross-line gradient', 'Z gradient'],
-	'Output': ['Crl_dip', 'Inl_dip', 'True Dip', 'Dip Azimuth']
+	'Output': ['Crl_dip', 'Inl_dip', 'True Dip', 'Dip Azimuth'],
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/DipandAzimuth/'
 }
 #
 # Define the compute function
