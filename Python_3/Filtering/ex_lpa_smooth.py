@@ -30,7 +30,7 @@ def doCompute():
 	kernel = lpa3D_init(xa.SI['nrinl'], xa.SI['nrcrl'], dz, xa.params['Par_0']['Value'])[0]
 	while True:
 		xa.doInput()
-		xa.Output = sconvolve(xa.Input['Input'], kernel)
+		xa.Output = xl.sconvolve(xa.Input['Input'], kernel)
 		xa.doOutput()
 	
 
