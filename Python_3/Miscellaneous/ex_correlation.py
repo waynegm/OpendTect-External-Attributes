@@ -5,14 +5,13 @@
 #
 import sys,os
 import numpy as np
-from scipy import signal
-from numba import autojit, jit, double, int64
+from numba import jit
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
 sys.path.insert(0, os.path.join(sys.path[0], '..'))
 import extattrib as xa
-import extlib as xl
+import extnumba as xn
 #
 # These are the attribute parameters
 #
@@ -21,7 +20,7 @@ xa.params = {
 	'Output': ['Shift', 'Quality'],
 	'ZSampMargin' : {'Value':[-10,10], 'Symmetric': True},
 	'Par_0': {'Name': 'Max Lag (samples)', 'Value': 5},
-	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/Miscellaneous/'
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/Z_Delay_Est/'
 }
 #
 # Define the compute function
@@ -29,47 +28,60 @@ xa.params = {
 def doCompute():
 	zw = xa.params['ZSampMargin']['Value'][1] - xa.params['ZSampMargin']['Value'][0] + 1
 	nlag = int(xa.params['Par_0']['Value'])
-
 	while True:
 		xa.doInput()
 
 		ref = xa.Input['Reference'][0,0,:]
-		match = xa.Input['Match'][0,0,:]
-		qual = np.zeros(ref.shape)
+		mat = xa.Input['Match'][0,0,:]
+		ns = ref.shape[0]
+		lag = np.zeros(ns)
+		qual = np.zeros(ns)
 
-		lag = localCorr(ref,match,zw,nlag)
+		localCorr( ref, mat, zw, nlag, lag, qual)
 #
 #	Get the output
 		xa.Output['Shift'] = lag*xa.SI['zstep']
 		xa.Output['Quality'] = qual
 		xa.doOutput()
 #
-# Local correlation - naive implementation
+# Local correlation - numba implementation
 #
-@jit(double(double[:], double[:],int64, int64))
-def localCorr( reference, match, zw, nlag ):
-	window = signal.blackman(zw)
-	lags = 2*nlag + 1
-	hzw = zw//2
-	ns = reference.shape[0]
-	refpad = np.pad(reference, hzw, 'edge')
-	matpad = np.pad(match, hzw+nlag, 'edge')
-	lag = np.zeros(ns)
-	for ir in range(0,ns):
-		cor = np.zeros(lags)
-		rbeg = ir
-		rend = rbeg + zw
-		for il in range(-nlag, nlag):
-			lbeg = ir + nlag +il
-			lend = lbeg + zw
-			cor[il+nlag] = np.mean(refpad[rbeg:rend]*matpad[lbeg:lend]*window)
-		pos = np.argmax(cor)
-		if pos>=1 and pos<lags:
-			cp = (cor[pos-1]-cor[pos+1])/(2.*cor[pos-1]-4.*cor[pos]+2.*cor[pos+1])
-			lag[ir] = (pos-nlag+cp)
-		else:
-			lag[ir]=0.0
-	return lag
+@jit(nopython=True)
+def localCorr( reference, match, winlen, nlag, lag, qual ):
+    hwin = winlen//2
+    lags = 2*nlag+1
+    ns = reference.shape[0]
+    hxw = hwin-nlag
+    cor = np.zeros(lags)
+    refSSQ = np.zeros(ns)
+    matSSQ = np.zeros(ns)
+    xn.winSSQ(reference,2*hxw+1,refSSQ)
+    xn.winSSQ(match,2*hxw+1,matSSQ)
+    for ir in range(hwin,ns-hwin):
+        rbeg = ir - hxw
+        rend = ir + hxw + 1
+        mbeg = rbeg - nlag
+        mend = rend + nlag
+        for il in range(lags):
+            lbeg = rbeg + il - nlag
+            lend = lbeg + 2 * hxw + 1
+            sum = 0.0
+            for iref,imat in zip(range(rbeg,rend),range(lbeg,lend)):
+                sum += reference[iref]*match[imat]
+            den = refSSQ[ir]*matSSQ[lbeg+hxw]
+            if den== 0.0:
+                cor[il] = 0.0
+            else:
+                cor[il] = sum/den
+        pos = np.argmax(cor)
+        if pos>0 and pos<lags-1:
+            cp = (cor[pos-1]-cor[pos+1])/(2.*cor[pos-1]-4.*cor[pos]+2.*cor[pos+1])
+            lag[ir] = pos-nlag+cp
+            qual[ir] = cor[pos]
+        else:
+            lag[ir]=0.0
+            qual[ir]=0.0
+
 #
 # Assign the compute function to the attribute
 #

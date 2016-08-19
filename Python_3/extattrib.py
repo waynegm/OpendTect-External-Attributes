@@ -1,6 +1,15 @@
 #
 # Python External Attribute Support
 #
+# Copyright (C) 2016 Wayne Mogg All rights reserved.
+#
+# This file may be used under the terms of the MIT License
+# (https://github.com/waynegm/OpendTect-External-Attributes/blob/master/LICENSE)
+#
+# Author:		Wayne Mogg
+# Date: 		March, 2016
+# Homepage:		http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/ExternalAttributes/
+#
 import sys, getopt, os, json
 import numpy as np
 
