@@ -43,20 +43,31 @@ def response(inp, outp):
     start = 0
     pos = inp[0]>0
     for i in range(ns):
-        if inp[i]<0 and pos:
+        if inp[i]<=0 and pos:
             if start<i-1:
                 outp[start:i-1] = np.max(inp[start:i-1])
             else:
                 outp[start] = inp[start]
             pos = False
             start = i
-        if inp[i]>0 and not pos:
+        if inp[i]>=0 and not pos:
             if start<i-1:
                 outp[start:i-1] = np.min(inp[start:i-1])
             else:
                 outp[start] = inp[start]
             pos=True
             start = i
+    if pos:
+        if start<ns-1:
+            outp[start:ns] = np.max(inp[start:ns])
+        else:
+            outp[start] = inp[start]
+    else:
+        if start<ns-1:
+            outp[start:ns] = np.min(inp[start:ns])
+        else:
+            outp[start] = inp[start]
+
 #
 # Assign the compute function to the attribute
 #
