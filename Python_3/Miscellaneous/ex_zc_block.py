@@ -1,7 +1,16 @@
-#!/usr/bin/python
 #
-# Response attribute - changes input to square wave with min and max matching input
+# Zero Crossing Block
 #
+# Block the seismic trace between the zero crossings. Block amplitude equal to min/max in interval blocked
+#
+# Copyright (C) 2016 Wayne Mogg All rights reserved.
+#
+# This file may be used under the terms of the MIT License
+# (https://github.com/waynegm/OpendTect-External-Attributes/blob/master/LICENSE)
+#
+# Author:		Wayne Mogg
+# Date: 		August, 2016
+# Homepage:		http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/ExternalAttributes/
 #
 import sys,os
 import numpy as np
@@ -17,7 +26,7 @@ import extattrib as xa
 xa.params = {
 	'Inputs': ['Input'],
 	'ZSampMargin' : {'Value':[-10,10], 'Hidden': True},
-	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/Response/'
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/ZC_Block/'
 }
 #
 # Define the compute function

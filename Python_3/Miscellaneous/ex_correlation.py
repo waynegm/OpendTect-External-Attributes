@@ -1,7 +1,14 @@
-#!/usr/bin/python
 #
-# Local cross-correlation of two inputs 
+# Local cross-correlation to measure relative time delay between two inputs 
 #
+# Copyright (C) 2016 Wayne Mogg All rights reserved.
+#
+# This file may be used under the terms of the MIT License
+# (https://github.com/waynegm/OpendTect-External-Attributes/blob/master/LICENSE)
+#
+# Author:		Wayne Mogg
+# Date: 		August, 2016
+# Homepage:		http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/ExternalAttributes/
 #
 import sys,os
 import numpy as np
