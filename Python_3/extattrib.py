@@ -13,6 +13,14 @@
 import sys, getopt, os, json
 import numpy as np
 
+import logging
+
+logH = logging.getLogger(os.path.basename(sys.argv[0])+" - "+str(os.getpid()))
+logFormatter = logging.Formatter('%(levelname)s - %(name)s - %(message)s')
+lH = logging.StreamHandler()
+lH.setFormatter(logFormatter)
+logH.addHandler(lH)
+
 params = {}
 Input = {}
 Output = {}
@@ -51,7 +59,7 @@ def writePar():
 		json.dump(params, sys.stdout)
 		sys.stdout.flush()
 	except (TypeError, ValueError) as err:
-		print('Error exporting parameter string: %s'% err, file=sys.stderr)
+		logH.error('Error exporting parameter string: %s'% err)
 		sys.exit(1)
   
 def readPar(jsonStr):
@@ -59,7 +67,7 @@ def readPar(jsonStr):
 	try:
 		params.update(json.loads(jsonStr))
 	except (TypeError, ValueError) as err:
-		print('Error decoding parameter string: %s' % err, file=sys.stderr)
+		logH.error('Error decoding parameter string: %s' % err)
 		sys.exit(1)
 
 def preCompute():
@@ -89,24 +97,35 @@ def usage():
 	print("Usage: %s \n" % sys.argv[0])
 
 def run(argv):
+	global logH
 	try:
-		opts, args = getopt.getopt(argv,"hgc:",["help", "getpar", "compute="])
+		opts, args = getopt.getopt(argv,"hl:gc:",["help", "logfile=", "getpar", "compute="])
 	except getopt.GetoptError as e:
-		print(string(e))
-		usage()
+		logH.error('Error in command line parameters: %s' % e)
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt in ("-h", "--help"):
 			usage()
 			sys.exit()
+		elif opt in ("-l", "--logfile"):
+			fh = logging.FileHandler(arg, mode='w')
+			fh.setFormatter(logFormatter)
+			logH.addHandler(fh)
+			continue
 		elif opt in ("-g", "--getpar"):
-			writePar()
-			sys.exit()
+			try:
+				writePar()
+				sys.exit()
+			except Exception:
+				logH.error("Fatal error in getpar", exc_info=True)
 		elif opt in ("-c", "--compute"):
-			readPar(arg)
-			preCompute()
-			doCompute()
-			sys.exit()
+			try:
+				readPar(arg)
+				preCompute()
+				doCompute()
+				sys.exit()
+			except Exception:
+				logH.error("Fatal error in compute", exc_info=True)
 
   
 
