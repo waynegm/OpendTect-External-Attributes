@@ -19,7 +19,7 @@ xa.params = {
 	'Inputs': ['Input'],
 	'Output': ['Crl_dip', 'Inl_dip', 'True Dip', 'Dip Azimuth'],
 	'ZSampMargin' : {'Value':[-2,2], 'Minimum':[-2,2], 'Symmetric': True},
-	'StepOut' : {'Value': [2,2], 'Minimum': [2,2], 'Symmetric': True},
+	'StepOut' : {'Value': [2,2], 'Minimum': [2,2]},
 	'Select': {'Name': 'Filter', 'Values': ['Mean Dip', 'Vector L1 Median Dip', 'Vector L2 Median Dip'], 'Selection': 0},
 	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/DipandAzimuth/'
 }
