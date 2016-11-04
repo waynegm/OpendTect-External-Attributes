@@ -35,10 +35,10 @@ def scharr3( input, axis=-1, output=None, mode="reflect", cval=0.0):
 		ndi.correlate1d(output, [0.12026,0.75948,0.12026], ii, output, mode, cval, 0,)
 	return return_value
 
-# Kroon 3 point derivative filter
+# Kroon 3 point first derivative filter
 #
 def kroon3( input, axis=-1, output=None, mode="reflect", cval=0.0):
-	"""Calculate a size 3 Kroon derivative filter.
+	"""Calculate a size 3 Kroon first derivative filter.
 	Parameters
 	----------
 	%(input)s
@@ -56,10 +56,31 @@ def kroon3( input, axis=-1, output=None, mode="reflect", cval=0.0):
 		ndi.correlate1d(output, [0.178947,0.642105,0.178947], ii, output, mode, cval, 0,)
 	return return_value
 
+# Farid 5 point second derivative filter
+#
+def farid2_( input, axis=-1, output=None, mode="reflect", cval=0.0):
+	"""Calculate a size 5 Farid second derivative filter.
+	Parameters
+	----------
+	%(input)s
+	%(axis)s
+	%(output)s
+	%(mode)s
+	%(cval)s
+	"""
+	input = np.asarray(input)
+	axis = ndi._ni_support._check_axis(axis, input.ndim)
+	output, return_value = ndi._ni_support._get_output(output, input)
+	ndi.correlate1d(input, [0.232905, 0.002668, -0.471147, 0.002668, 0.232905], axis, output, mode, cval, 0)
+	axes = [ii for ii in range(input.ndim) if ii != axis]
+	for ii in axes:
+		ndi.correlate1d(output, [0.030320, 0.249724, 0.439911, 0.249724, 0.030320], ii, output, mode, cval, 0,)
+	return return_value
+
 # Farid 5 point derivative filter
 #
 def farid5( input, axis=-1, output=None, mode="reflect", cval=0.0):
-	"""Calculate a size 3 Kroon derivative filter.
+	"""Calculate a size 5 Farid first derivative filter.
 	Parameters
 	----------
 	%(input)s
