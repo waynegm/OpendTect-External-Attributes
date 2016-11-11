@@ -1,7 +1,7 @@
 # External Attribute Skeleton
 #
 # Input: Multi-trace, single attribute
-# Output: Single attribute
+# Output: Multi-attribute
 #
 import sys,os
 import numpy as np
@@ -16,6 +16,7 @@ import extattrib as xa
 #
 xa.params = {
 	'Inputs': ['Input'],
+	'Output' : ['Output1', 'Output2', 'Output3'],
 	'ZSampMargin' : {'Value': [-30,30], 'Minimum': [-1,1], 'Symmetric': True, 'Hidden': False},
 	'StepOut' : {'Value': [1,1], 'Minimum': [1,1], 'Hidden': False},
 	'Par_0' : {'Name': 'Parameter 0', 'Value': 0},
@@ -71,10 +72,16 @@ def doCompute():
 				if (inline != centre_trace_x and xline != centre_trace_y):
 					outdata += indata[inline,xline,:]
 
-		outdata /= (number_inline * number_xline - 1)
+		out_1 = indata[centre_trace_x,centre_trace_y,:]
+		out_2 = outdata
+		out_3 = outdata / (number_inline * number_xline - 1)
 #------------------------------------------------------------------------------------
 #
-		xa.Output = outdata
+#	Replace Output1-Output3 with the names in the xa.params Output array
+#
+		xa.Output['Output1'] = out_1
+		xa.Output['Output2'] = out_2
+		xa.Output['Output3'] = out_3
 		xa.doOutput()
 
 #

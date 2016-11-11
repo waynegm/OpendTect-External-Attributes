@@ -99,7 +99,7 @@ def usage():
 def run(argv):
 	global logH
 	try:
-		opts, args = getopt.getopt(argv,"hl:gc:",["help", "logfile=", "getpar", "compute="])
+		opts, args = getopt.getopt(argv,"hgc:",["help", "getpar", "compute="])
 	except getopt.GetoptError as e:
 		logH.error('Error in command line parameters: %s' % e)
 		sys.exit(2)
@@ -107,11 +107,6 @@ def run(argv):
 		if opt in ("-h", "--help"):
 			usage()
 			sys.exit()
-		elif opt in ("-l", "--logfile"):
-			fh = logging.FileHandler(arg, mode='w')
-			fh.setFormatter(logFormatter)
-			logH.addHandler(fh)
-			continue
 		elif opt in ("-g", "--getpar"):
 			try:
 				writePar()
