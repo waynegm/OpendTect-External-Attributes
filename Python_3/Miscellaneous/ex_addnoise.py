@@ -27,7 +27,7 @@ xa.params = {
 	'ZSampMargin' : {'Value': [-5,5], 'Hidden': True, 'Symmetric': True},
 	'Par_0' : {'Name': 'S/N Ratio', 'Value': 1},
 	'Parallel' : True,
-	'Help'  : 'http://waynegm.github.io/OpendTect-Plugin-Docs/Attributes/ExternalAttrib/'
+	'Help'  : 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/Add_Noise/'
 }
 #
 # Define the compute function

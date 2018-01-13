@@ -12,7 +12,22 @@
 #
 import numpy as np
 import scipy.ndimage as ndi
+import scipy.signal as ss
 from numba import autojit, jit, double
+
+
+# Generate Hilbert Transformer kernel
+#
+def hilbert_kernel(N, band=0.9):
+	"""Calculate a 2*N+1 length complex kernel to compute a Hilbert Transformer
+	Parameters
+	----------
+	%(N)s
+	%(band)s
+	"""
+	x = np.linspace(-N,N,2*N+1) * np.pi /2.0 * 1j
+	result = ss.firwin(2*N+1,band/2, window="nuttall") * np.exp(x) * 2
+	return result
 
 # Scharr 3 point derivative filter
 #

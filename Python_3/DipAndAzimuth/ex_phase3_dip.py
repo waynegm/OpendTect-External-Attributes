@@ -4,8 +4,7 @@
 #
 import sys,os
 import numpy as np
-from scipy.signal import hilbert
-import scipy.ndimage as ndi
+import scipy.signal as ss
 #
 # Import the module with the I/O scaffolding of the External Attribute
 #
@@ -19,8 +18,10 @@ import extlib as xl
 xa.params = {
 	'Inputs': ['Input'],
 	'Output': ['Crl_dip', 'Inl_dip', 'True Dip', 'Dip Azimuth'],
-	'ZSampMargin' : {'Value':[-1,1], 'Hidden': True},
+	'ZSampMargin' : {'Value':[-15,15], 'Symmetric': True},
+	'Par_0' : {'Name': 'Band', 'Value': 0.9},
 	'StepOut' : {'Value': [1,1], 'Hidden': True},
+	'Parallel': True,
 	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/DipandAzimuth/'
 }
 #
@@ -31,23 +32,31 @@ def doCompute():
 	hys = xa.SI['nrcrl']//2
 	inlFactor = xa.SI['zstep']/xa.SI['inldist'] * xa.SI['dipFactor']
 	crlFactor = xa.SI['zstep']/xa.SI['crldist'] * xa.SI['dipFactor']
+	band = xa.params['Par_0']['Value']
+	N = xa.params['ZSampMargin']['Value'][1]
+	kernel = xl.hilbert_kernel(N, band)
 	while True:
 		xa.doInput()
 
-		s = xa.Input['Input']
-		sh = np.imag( hilbert(s) ) 
+		indata = xa.Input['Input']
+#
+#	Analytic Signal
+#
+		ansig = np.apply_along_axis(np.convolve,-1, indata, kernel, mode="same")
+		sr = np.real(ansig)
+		si = np.imag(ansig)
 #
 #	Compute partial derivatives
-		sx = xl.kroon3( s, axis=0 )[hxs,hys,:]
-		sy = xl.kroon3( s, axis=1 )[hxs,hys,:]
-		sz = xl.kroon3( s, axis=2 )[hxs,hys,:]
-		shx = xl.kroon3( sh, axis=0 )[hxs,hys,:]
-		shy = xl.kroon3( sh, axis=1 )[hxs,hys,:]
-		shz = xl.kroon3( sh, axis=2 )[hxs,hys,:]
+		sx = xl.kroon3( sr, axis=0 )[hxs,hys,:]
+		sy = xl.kroon3( sr, axis=1 )[hxs,hys,:]
+		sz = xl.kroon3( sr, axis=2 )[hxs,hys,:]
+		shx = xl.kroon3( si, axis=0 )[hxs,hys,:]
+		shy = xl.kroon3( si, axis=1 )[hxs,hys,:]
+		shz = xl.kroon3( si, axis=2 )[hxs,hys,:]
 		
-		px = s[hxs,hys,:] * shx - sh[hxs,hys,:] * sx 
-		py = s[hxs,hys,:] * shy - sh[hxs,hys,:] * sy 
-		pz = s[hxs,hys,:] * shz - sh[hxs,hys,:] * sz 
+		px = sr[hxs,hys,:] * shx - si[hxs,hys,:] * sx 
+		py = sr[hxs,hys,:] * shy - si[hxs,hys,:] * sy 
+		pz = sr[hxs,hys,:] * shz - si[hxs,hys,:] * sz 
 #
 #	Calculate dips and output
 		xa.Output['Crl_dip'] = -py/pz*crlFactor

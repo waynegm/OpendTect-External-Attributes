@@ -3,6 +3,7 @@ This a collection of [External Attribute](http://waynegm.github.io/OpendTect-Plu
 
 | PLUGIN | DESCRIPTION |
 |--------|-------------|
+| ex_dip.py | True (Pola) dip and Dip Azimuth from inline and crossline dip |
 | ex_gradient_dip.py | Orientation from inline, crossline and z gradients |
 | ex_vf_gradient3_dip.py | Orientation using the vector filtered gradient with gradients by Kroon's 3 point operator |
 | ex_gradient3_st_dip.py | Orientation using the gradient structure tensor with gradients by Kroon's 3 point operator|
