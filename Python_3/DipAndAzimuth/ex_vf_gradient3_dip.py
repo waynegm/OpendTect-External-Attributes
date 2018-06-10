@@ -20,7 +20,7 @@ xa.params = {
 	'Output': ['Crl_dip', 'Inl_dip', 'True Dip', 'Dip Azimuth'],
 	'ZSampMargin' : {'Value':[-2,2], 'Minimum':[-2,2], 'Symmetric': True},
 	'StepOut' : {'Value': [2,2], 'Minimum': [2,2]},
-	'Select': {'Name': 'Filter', 'Values': ['Mean Dip', 'Vector L1 Median Dip', 'Vector L2 Median Dip'], 'Selection': 0},
+	'Select': {'Name': 'Filter', 'Values': ['Mean Dip', 'Vector L1 Median Dip', 'Vector L2 Median Dip', 'Vector X3 Median'], 'Selection': 0},
 	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/DipandAzimuth/'
 }
 #
@@ -32,7 +32,7 @@ def doCompute():
 	zs = xa.params['ZSampMargin']['Value'][1] - xa.params['ZSampMargin']['Value'][0] + 1
 	zw = zs-2
 	filt = xa.params['Select']['Selection']
-	filtFunc = autojit(xl.vecmean) if filt==0 else  autojit(xl.vmf_l1) if filt==1 else autojit(xl.vmf_l2)
+	filtFunc = autojit(xl.vecmean) if filt==0 else  autojit(xl.vmf_l1) if filt==1 else autojit(xl.vmf_l2) if filt==2 else autojit(xl.vmf_x3)
 	inlFactor = xa.SI['zstep']/xa.SI['inldist'] * xa.SI['dipFactor']
 	crlFactor = xa.SI['zstep']/xa.SI['crldist'] * xa.SI['dipFactor']
 	while True:
