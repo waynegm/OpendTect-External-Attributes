@@ -16,6 +16,22 @@ import scipy.signal as ss
 from numba import autojit, jit, double
 
 
+#
+#
+def getOutput(output, input, shape=None):
+    if shape is None:
+        shape = input.shape
+    if output is None:
+        output = np.zeros(shape, dtype=input.dtype.name)
+    elif type(output) in [type(type), type(np.zeros((4,)).dtype)]:
+        output = np.zeros(shape, dtype=output)
+    elif isinstance(output, string_types):
+        output = np.typeDict[output]
+        output = np.zeros(shape, dtype=output)
+    elif output.shape != shape:
+        raise RuntimeError("output shape not correct")
+    return output
+
 # 
 #
 def hilbert_kernel(N, band=0.9):
@@ -65,12 +81,12 @@ def scharr3( input, axis=-1, output=None, mode="reflect", cval=0.0):
 	"""
 	input = np.asarray(input)
 	axis = ndi._ni_support._check_axis(axis, input.ndim)
-	output, return_value = ndi._ni_support._get_output(output, input)
+	output = getOutput(output, input)
 	ndi.correlate1d(input, [-0.5, 0, 0.5], axis, output, mode, cval, 0)
 	axes = [ii for ii in range(input.ndim) if ii != axis]
 	for ii in axes:
 		ndi.correlate1d(output, [0.12026,0.75948,0.12026], ii, output, mode, cval, 0)
-	return return_value
+	return output
 #
 #
 def _separableFilterFull( input, weights, output=None, mode="reflect", cval=0.0):
@@ -98,12 +114,12 @@ def _separableFilterFull( input, weights, output=None, mode="reflect", cval=0.0)
 		will be affected by boundary effects. 
 	"""
 	input = np.asarray(input)
-	output, return_value = ndi._ni_support._get_output(output, input)
+	output = getOutput(output, input)
 	ndi.correlate1d(input, weights[0], 0, output, mode, cval, 0)
 	ndi.correlate1d(output, weights[1], 1, output, mode, cval, 0)
 	if input.ndim==3 :
 		ndi.correlate1d(output, weights[2], 2, output, mode, cval, 0)
-	return return_value
+	return output
 #
 #
 def _separableFilterSingle( input, weights, output=None, mode="reflect", cval=0.0):
@@ -129,7 +145,7 @@ def _separableFilterSingle( input, weights, output=None, mode="reflect", cval=0.
 	"""
 	input = np.asarray(input)
 	inshape = input.shape
-	output, return_value = ndi._ni_support._get_output(output, input,(inshape[-1]))
+	output = getOutput(output, input,(inshape[-1]))
 
 	if input.ndim==2 :
 		W0 = weights[0]
@@ -149,7 +165,7 @@ def _separableFilterSingle( input, weights, output=None, mode="reflect", cval=0.
 		tmp0 = np.sum(W0[:,np.newaxis,np.newaxis]*use, 0)
 		tmp1 = np.sum(W1[:,np.newaxis]*tmp0, 0)
 		ndi.correlate1d(tmp1, W2, -1, output, mode='reflect')
-	return return_value
+	return output
 #
 #
 def scharr3_dx( input, output=None, full=True, mode="reflect", cval=0.0):
@@ -582,12 +598,12 @@ def kroon3( input, axis=-1, output=None, mode="reflect", cval=0.0):
 	"""
 	input = np.asarray(input)
 	axis = ndi._ni_support._check_axis(axis, input.ndim)
-	output, return_value = ndi._ni_support._get_output(output, input)
+	output = getOutput( output, input)
 	ndi.correlate1d(input, [-0.5, 0, 0.5], axis, output, mode, cval, 0)
 	axes = [ii for ii in range(input.ndim) if ii != axis]
 	for ii in axes:
 		ndi.correlate1d(output, [0.178947,0.642105,0.178947], ii, output, mode, cval, 0,)
-	return return_value
+	return output
 
 # Farid 5 point second derivative filter
 #
@@ -603,12 +619,12 @@ def farid2_( input, axis=-1, output=None, mode="reflect", cval=0.0):
 	"""
 	input = np.asarray(input)
 	axis = ndi._ni_support._check_axis(axis, input.ndim)
-	output, return_value = ndi._ni_support._get_output(output, input)
+	output = getOutput(output, input)
 	ndi.correlate1d(input, [0.232905, 0.002668, -0.471147, 0.002668, 0.232905], axis, output, mode, cval, 0)
 	axes = [ii for ii in range(input.ndim) if ii != axis]
 	for ii in axes:
 		ndi.correlate1d(output, [0.030320, 0.249724, 0.439911, 0.249724, 0.030320], ii, output, mode, cval, 0,)
-	return return_value
+	return output
 
 # Farid 5 point derivative filter
 #
@@ -624,12 +640,13 @@ def farid5( input, axis=-1, output=None, mode="reflect", cval=0.0):
 	"""
 	input = np.asarray(input)
 	axis = ndi._ni_support._check_axis(axis, input.ndim)
-	output, return_value = ndi._ni_support._get_output(output, input)
+	output = getOutput(output, input)
 	ndi.correlate1d(input, [-0.109604, -0.276691,  0.000000, 0.276691, 0.109604], axis, output, mode, cval, 0)
 	axes = [ii for ii in range(input.ndim) if ii != axis]
 	for ii in axes:
 		ndi.correlate1d(output, [0.037659,  0.249153,  0.426375, 0.249153, 0.037659], ii, output, mode, cval, 0,)
-	return return_value
+	return output
+
 # Gaussian filter kernel
 #
 def getGaussian( xs, ys, zs ):
