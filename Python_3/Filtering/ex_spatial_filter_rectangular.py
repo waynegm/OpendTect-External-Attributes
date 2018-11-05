@@ -23,7 +23,7 @@ xa.params = {
 	'Par_0' : {'Name': 'Norm. Inline Spatial Freq', 'Value': 0.5},
 	'Par_1' : {'Name': 'Norm. Xline Spatial Freq', 'Value': 0.5},
 	'Select' : {'Name': 'Type', 'Values': ['Low Pass', 'High Pass', 'Band Pass', 'Band Reject'], 'Selection': 0},
-	'Help'  : 'http://waynegm.github.io/OpendTect-Plugin-Docs/Attributes/ExternalAttrib/'
+	'Help'  : 'http://waynegm.github.io/OpendTect-Plugin-Docs/external_attributes/Spatial_Filter_Rectangular.html'
 }
 #
 # Define the compute function

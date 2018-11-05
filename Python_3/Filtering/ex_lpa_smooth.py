@@ -20,7 +20,7 @@ xa.params = {
 	'ZSampMargin' : {'Value':[-1,1], 'Symmetric': True},
 	'StepOut' : {'Value': [1,1]},
 	'Par_0': {'Name': 'Weight Factor', 'Value': 0.2},
-	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/LPA_Smooth/'
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/external_attributes/LPA_Smooth.html'
 }
 #
 # Define the compute function

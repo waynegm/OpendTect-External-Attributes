@@ -26,7 +26,7 @@ import extattrib as xa
 xa.params = {
 	'Inputs': ['Input'],
 	'ZSampMargin' : {'Value':[-10,10], 'Hidden': True},
-	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/ZC_Block/'
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/external_attributes/ZC_Block.html'
 }
 #
 # Define the compute function

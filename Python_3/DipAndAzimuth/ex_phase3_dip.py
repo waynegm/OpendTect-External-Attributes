@@ -22,7 +22,7 @@ xa.params = {
 	'Par_0' : {'Name': 'Band', 'Value': 0.9},
 	'StepOut' : {'Value': [1,1], 'Hidden': True},
 	'Parallel': True,
-	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/DipandAzimuth/'
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/external_attributes/DipandAzimuth.html'
 }
 #
 # Define the compute function

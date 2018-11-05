@@ -21,7 +21,7 @@ xa.params = {
 	'StepOut' : {'Value': [9,9], 'Minimum': [9,9], 'Hidden': False, 'Same': True},
 	'Par_0' : {'Name': 'Norm. Spatial Frequency', 'Value': 0.5},
 	'Select' : {'Name': 'Type', 'Values': ['Low Pass', 'High Pass', 'Band Pass', 'Band Reject'], 'Selection': 0},
-	'Help'  : 'http://waynegm.github.io/OpendTect-Plugin-Docs/Attributes/ExternalAttrib/'
+	'Help'  : 'http://waynegm.github.io/OpendTect-Plugin-Docs/external_attributes/Spatial_Filter_Circular.html'
 }
 #
 # Define the compute function

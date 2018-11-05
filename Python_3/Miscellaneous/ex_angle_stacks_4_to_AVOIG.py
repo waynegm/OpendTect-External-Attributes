@@ -27,7 +27,7 @@ xa.params = {
 	'Par_1': {'Name': 'Mid Angle', 'Value': 23},
 	'Par_2': {'Name': 'Far Angle', 'Value': 29},
 	'Par_3': {'Name': 'UltraFar Angle', 'Value': 34},
-	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/AVO_IG/'
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/external_attributes/AVO_IG.html'
 }
 #
 # Define the compute function

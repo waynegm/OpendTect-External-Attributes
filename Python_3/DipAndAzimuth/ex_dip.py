@@ -16,7 +16,7 @@ import extattrib as xa
 xa.params = {
 	'Inputs': ['Crl_dip', 'Inl_dip'],
 	'Output': ['True Dip', 'Dip Azimuth'],
-	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/external_attributes/ex_dip_py'
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/external_attributes/DipandAzimuth.html'
 }
 #
 # Define the compute function

@@ -27,7 +27,7 @@ xa.params = {
 	'Output': ['Shift', 'Quality'],
 	'ZSampMargin' : {'Value':[-10,10], 'Symmetric': True},
 	'Par_0': {'Name': 'Max Lag (samples)', 'Value': 5},
-	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/External_Attributes/Z_Delay_Est/'
+	'Help': 'http://waynegm.github.io/OpendTect-Plugin-Docs/external_attributes/Z_Delay_Est.html'
 }
 #
 # Define the compute function
